@@ -21,15 +21,16 @@ ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://8000-idx-lifepage-1736778536248.cluster-7ubberrabzh4qqy2g4z7wgxuw2.cloudworkstations.dev',
-    'https://3000-idx-easygrocery-1735717909998.cluster-fu5knmr55rd44vy7k7pxk74ams.cloudworkstations.dev',
+    'https://3000-idx-lifepage-1737724684212.cluster-a3grjzek65cxex762e4mwrzl46.cloudworkstations.dev/',
     'https://lifepage-server.onrender.com',
-    'https://lifepage.onrender.com'
+    'https://lifepage.vercel.app/'
 ]
 
 CORS_ALLOWED_ORIGINS = [
     'https://8000-idx-lifepage-1736778536248.cluster-7ubberrabzh4qqy2g4z7wgxuw2.cloudworkstations.dev',
+    'https://3000-idx-lifepage-1737724684212.cluster-a3grjzek65cxex762e4mwrzl46.cloudworkstations.dev/',
     'https://lifepage-server.onrender.com',
-    'https://lifepage.onrender.com'
+    'https://lifepage.vercel.app/'
 ]
 
 
