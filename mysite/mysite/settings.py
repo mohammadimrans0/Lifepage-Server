@@ -26,12 +26,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://lifepage.vercel.app'
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    'https://8000-idx-lifepage-1736778536248.cluster-7ubberrabzh4qqy2g4z7wgxuw2.cloudworkstations.dev',
-    'https://3000-idx-lifepage-1737724684212.cluster-a3grjzek65cxex762e4mwrzl46.cloudworkstations.dev',
-    'https://lifepage-server.onrender.com',
-    'https://lifepage.vercel.app'
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Application definition
@@ -43,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
@@ -53,6 +49,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

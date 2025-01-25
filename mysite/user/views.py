@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.contrib.auth import authenticate
+# from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -15,12 +16,8 @@ class ProfileViewSet(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
 
     def get_queryset(self):
-        """
-        Override the default queryset to filter for the authenticated user's profile
-        when updating, otherwise return all profiles.
-        """
         if self.action in ['update', 'partial_update']:
-            return Profile.objects.all()  # No authentication applied here.
+            return Profile.objects.all()
         return super().get_queryset()
 
     def perform_create(self, serializer):
@@ -64,8 +61,14 @@ class AuthViewSet(viewsets.ViewSet):
         username = request.data.get('username')
         password = request.data.get('password')
         user = authenticate(request, username=username, password=password)
+
         if user:
-            return Response({"detail": "Logged in successfully."}, status=status.HTTP_200_OK)
+            # token, _ = Token.objects.get_or_create(user=user)
+            return Response({
+                "detail": "Logged in successfully.",
+                # 'token': token.key,
+                'user_id': user.id},
+                status=status.HTTP_200_OK)
         return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
 
     @action(detail=False, methods=['post'])
