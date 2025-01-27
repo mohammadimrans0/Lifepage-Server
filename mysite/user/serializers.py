@@ -8,8 +8,7 @@ from post.serializers import PostSerializer
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']
-        
+        fields = ['id', 'username', 'email']  
 
 # Profile Serializer
 class ProfileSerializer(serializers.ModelSerializer):
@@ -73,4 +72,42 @@ class SignupSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password']
         )
+        return user
+
+
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required = True)
+    password = serializers.CharField(required = True)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, write_only=True, min_length=8)
+    confirm_password = serializers.CharField(required=True, write_only=True)
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        new_password = attrs.get('new_password')
+        confirm_password = attrs.get('confirm_password')
+
+        # Check if user exists
+        try:
+            user = User.objects.get(username=username)
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError({"username": "User does not exist."})
+
+        # Check if passwords match
+        if new_password != confirm_password:
+            raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
+
+        return attrs
+
+    def save(self, **kwargs):
+        username = self.validated_data['username']
+        new_password = self.validated_data['new_password']
+
+        user = User.objects.get(username=username)
+        user.set_password(new_password)
+        user.save()
+
         return user

@@ -9,7 +9,15 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from .models import Profile, Follow
-from .serializers import SignupSerializer, ProfileSerializer, FollowSerializer, UserSerializer
+from .serializers import SignupSerializer, ProfileSerializer, FollowSerializer, UserSerializer, UserLoginSerializer, ResetPasswordSerializer
+from django.contrib.auth import login, logout
+from rest_framework.authtoken.models import Token
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    
 
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.all()
@@ -55,48 +63,42 @@ class SignupViewSet(viewsets.ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class AuthViewSet(viewsets.ViewSet):
-    @action(detail=False, methods=['post'])
-    def login(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        user = authenticate(request, username=username, password=password)
-
-        if user:
-            # token, _ = Token.objects.get_or_create(user=user)
-            return Response({
-                "detail": "Logged in successfully.",
-                # 'token': token.key,
-                'user_id': user.id},
-                status=status.HTTP_200_OK)
-        return Response({"detail": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
-
-    @action(detail=False, methods=['post'])
-    def logout(self, request):
-        return Response({"detail": "Logged out successfully."}, status=status.HTTP_200_OK)
-
-
-class ResetPasswordView(APIView):
+# Login user
+class UserLoginApiView(APIView):
     def post(self, request):
-        email = request.data.get('email')
-        user = get_object_or_404(User, email=email)
-        token_generator = PasswordResetTokenGenerator()
-        token = token_generator.make_token(user)
-        reset_url = f"http://frontend-url/reset-password/{user.pk}/{token}"
-        send_mail(
-            subject="Password Reset Request",
-            message=f"Click the link to reset your password: {reset_url}",
-            from_email="no-reply@example.com",
-            recipient_list=[email],
-        )
-        return Response({"detail": "Password reset email sent."}, status=status.HTTP_200_OK)
+        serializer = UserLoginSerializer(data=request.data)
 
-    def put(self, request, user_id, token):
-        password = request.data.get('password')
-        user = get_object_or_404(User, pk=user_id)
-        token_generator = PasswordResetTokenGenerator()
-        if token_generator.check_token(user, token):
-            user.set_password(password)
-            user.save()
-            return Response({"detail": "Password reset successfully."}, status=status.HTTP_200_OK)
-        return Response({"detail": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            password = serializer.validated_data['password']
+
+            user = authenticate(username=username, password=password)
+            
+            if user:
+                token, _ = Token.objects.get_or_create(user=user)
+                login(request, user)
+                return Response({'token': token.key, 'user_id': user.id})
+            else:
+                return Response({'error': "Invalid Username or Password"})
+        return Response(serializer.errors)
+
+
+# Logout user
+class UserLogoutApiView(APIView):
+    def get(self, request):
+        if hasattr(request.user, 'auth_token'):
+            request.user.auth_token.delete()
+            logout(request)
+            return Response({"message": "Logout successful."})
+        else:
+            return Response({"error": "No active session or token found."})
+
+
+# reset password
+class ResetPasswordView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Password reset successful."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
