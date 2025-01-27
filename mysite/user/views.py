@@ -85,13 +85,11 @@ class UserLoginApiView(APIView):
 
 # Logout user
 class UserLogoutApiView(APIView):
-    def get(self, request):
+    def post(self, request):
         if hasattr(request.user, 'auth_token'):
             request.user.auth_token.delete()
-            logout(request)
-            return Response({"message": "Logout successful."})
-        else:
-            return Response({"error": "No active session or token found."})
+        logout(request)
+        return Response({"message": "Logout successful."})
 
 
 # reset password
