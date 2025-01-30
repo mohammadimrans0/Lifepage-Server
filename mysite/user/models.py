@@ -6,8 +6,8 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     name = models.CharField(max_length=255, blank=True, null=True)
     image = models.ImageField(
-        upload_to='user/upload/images/', 
-        default='user/upload/images/avatar.jpg'
+        upload_to='upload/user/images/', 
+        default='upload/user/images/avatar.jpg'
     )
     bio = models.TextField(blank=True)
     status = models.CharField(max_length=255, blank=True, null=True)

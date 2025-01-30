@@ -22,6 +22,8 @@ ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = [
     'https://8000-idx-lifepage-1736778536248.cluster-7ubberrabzh4qqy2g4z7wgxuw2.cloudworkstations.dev',
     'https://3000-idx-lifepage-1737724684212.cluster-a3grjzek65cxex762e4mwrzl46.cloudworkstations.dev',
+    'http://127.0.0.1:8000',
+    'http://localhost:3000',
     'https://lifepage-server.onrender.com',
     'https://lifepage.vercel.app'
 ]
