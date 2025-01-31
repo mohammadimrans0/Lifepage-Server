@@ -1,4 +1,8 @@
-# Django
+# Live Site
 
-A Django starter template as per the docs: https://docs.djangoproject.com/en/5.0/intro/tutorial01/
+## https://lifepage.vercel.app/
+
+# Frontend Code
+
+## https://github.com/mohammadimrans0/Lifepage
 
