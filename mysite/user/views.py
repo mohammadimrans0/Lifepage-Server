@@ -1,24 +1,21 @@
-from rest_framework import viewsets, generics, status
+from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.contrib.auth import authenticate
-# from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.mail import send_mail
 from .models import Profile, Follow
 from .serializers import SignupSerializer, ProfileSerializer, FollowSerializer, UserSerializer, UserLoginSerializer, ResetPasswordSerializer
 from django.contrib.auth import login, logout
 from rest_framework.authtoken.models import Token
 
-
+# user viewset
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
 
+# profile viewset
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
@@ -50,8 +47,49 @@ class ProfileViewSet(viewsets.ModelViewSet):
             follow_instance.delete()
             return Response({"detail": "Unfollowed successfully"}, status=status.HTTP_204_NO_CONTENT)
         return Response({"detail": "You are not following this profile."}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+# follow view
+class FollowView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            following_id = request.data.get('following_id')
+            following = Profile.objects.get(id=following_id)
+            follower = request.user.profile
+
+            # Prevent self-follow
+            if follower == following:
+                return Response({"error": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check if already following
+            if Follow.objects.filter(follower=follower, following=following).exists():
+                return Response({"error": "Already following this user."}, status=status.HTTP_400_BAD_REQUEST)
+
+            follow = Follow.objects.create(follower=follower, following=following)
+            serializer = FollowSerializer(follow)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        except Profile.DoesNotExist:
+            return Response({"error": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, *args, **kwargs):
+        following_id = request.data.get('following_id')
+        follower = request.user.profile
+
+        try:
+            following = Profile.objects.get(id=following_id)
+            follow_instance = Follow.objects.get(follower=follower, following=following)
+            follow_instance.delete()
+            return Response({"message": "Unfollowed successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+        except Profile.DoesNotExist:
+            return Response({"error": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        except Follow.DoesNotExist:
+            return Response({"error": "You are not following this user."}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# signup user
 class SignupViewSet(viewsets.ViewSet):
     serializer_class = SignupSerializer
 

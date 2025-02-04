@@ -7,7 +7,7 @@ class Profile(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
     image = models.ImageField(
         upload_to='upload/user/images/', 
-        default='upload/user/images/avatar.jpg'
+        default='upload/user/images/avatar.png'
     )
     bio = models.TextField(blank=True)
     status = models.CharField(max_length=255, blank=True, null=True)
@@ -38,4 +38,4 @@ class Follow(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.follower.user.username} -> {self.following.user.username}"
+        return f"{self.follower.user.username} following {self.following.user.username}"

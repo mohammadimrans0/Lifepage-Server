@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import Profile, Follow
-from post.models import Post
 from post.serializers import PostSerializer
 
 # User Serializer
