@@ -4,8 +4,8 @@ from .views import PostViewSet, LikePostViewSet, CommentPostViewSet, BookMarkVie
 
 router = DefaultRouter()
 router.register(r'posts', PostViewSet)
-router.register(r'likeposts', LikePostViewSet)
-router.register(r'commentposts', CommentPostViewSet)
+router.register(r'likepost', LikePostViewSet)
+router.register(r'commentpost', CommentPostViewSet)
 router.register(r'bookmarks', BookMarkViewSet)
 
 urlpatterns = [

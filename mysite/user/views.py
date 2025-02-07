@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -27,66 +28,50 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save()
-
-    @action(detail=True, methods=['post'])
-    def follow(self, request, pk=None):
-        """Follow a profile."""
-        profile = self.get_object()
-        Follow.objects.get_or_create(
-            follower=None,  # Replace None with proper user logic later.
-            following=profile
-        )
-        return Response({"detail": "Followed successfully"}, status=status.HTTP_201_CREATED)
-
-    @action(detail=True, methods=['post'])
-    def unfollow(self, request, pk=None):
-        """Unfollow a profile."""
-        profile = self.get_object()
-        follow_instance = Follow.objects.filter(follower=None, following=profile)  # Replace None with user logic later.
-        if follow_instance.exists():
-            follow_instance.delete()
-            return Response({"detail": "Unfollowed successfully"}, status=status.HTTP_204_NO_CONTENT)
-        return Response({"detail": "You are not following this profile."}, status=status.HTTP_400_BAD_REQUEST)
     
 
 # follow view
-class FollowView(APIView):
+class UserFollowView(APIView):
     def post(self, request, *args, **kwargs):
-        try:
-            following_id = request.data.get('following_id')
-            following = Profile.objects.get(id=following_id)
-            follower = request.user.profile
+        user_id = request.data.get('user_id')
+        if not user_id:
+            return Response({"detail": "User ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Prevent self-follow
-            if follower == following:
-                return Response({"error": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+        follower = getattr(request.user, 'profile', None)
+        if not follower:
+            return Response({"detail": "User profile not found."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check if already following
-            if Follow.objects.filter(follower=follower, following=following).exists():
-                return Response({"error": "Already following this user."}, status=status.HTTP_400_BAD_REQUEST)
+        following = get_object_or_404(Profile, id=user_id)
 
-            follow = Follow.objects.create(follower=follower, following=following)
-            serializer = FollowSerializer(follow)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        except Profile.DoesNotExist:
-            return Response({"error": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
+        if follower == following:
+            return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
 
+        if Follow.objects.filter(follower=follower, following=following).exists():
+            return Response({"detail": "Already following this user."}, status=status.HTTP_400_BAD_REQUEST)
+
+        follow = Follow.objects.create(follower=follower, following=following)
+        serializer = FollowSerializer(follow)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class UserUnfollowView(APIView):
     def delete(self, request, *args, **kwargs):
-        following_id = request.data.get('following_id')
-        follower = request.user.profile
+        user_id = request.query_params.get('user_id')
+        if not user_id:
+            return Response({"detail": "User ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            following = Profile.objects.get(id=following_id)
-            follow_instance = Follow.objects.get(follower=follower, following=following)
-            follow_instance.delete()
-            return Response({"message": "Unfollowed successfully."}, status=status.HTTP_204_NO_CONTENT)
+        follower = getattr(request.user, 'profile', None)
+        if not follower:
+            return Response({"detail": "User profile not found."}, status=status.HTTP_400_BAD_REQUEST)
 
-        except Profile.DoesNotExist:
-            return Response({"error": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
+        following = get_object_or_404(Profile, id=user_id)
 
-        except Follow.DoesNotExist:
-            return Response({"error": "You are not following this user."}, status=status.HTTP_400_BAD_REQUEST)
+        follow_instance = Follow.objects.filter(follower=follower, following=following).first()
+        if not follow_instance:
+            return Response({"detail": "You are not following this user."}, status=status.HTTP_400_BAD_REQUEST)
+
+        follow_instance.delete()
+        return Response({"detail": "Unfollowed successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 
 # signup user

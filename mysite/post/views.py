@@ -26,6 +26,26 @@ class LikePostViewSet(viewsets.ModelViewSet):
             )
 
         return super().create(request, *args, **kwargs)
+    
+    def delete(self, request, *args, **kwargs):
+        user_id = request.query_params.get('user_id')
+        post_id = request.query_params.get('post_id')
+
+        try:
+            like_post = LikePost.objects.get(user_id=user_id, post_id=post_id)
+        except LikePost.DoesNotExist:
+            return Response(
+                {"detail": "Like for this post by this user does not exist."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Delete the LikePost object
+        like_post.delete()
+
+        return Response(
+            {"detail": "Like removed successfully."},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 class CommentPostViewSet(viewsets.ModelViewSet):
     queryset = CommentPost.objects.all()
@@ -50,3 +70,24 @@ class BookMarkViewSet(viewsets.ModelViewSet):
             )
 
         return super().create(request, *args, **kwargs)
+    
+    def delete(self, request, *args, **kwargs):
+        user_id = request.query_params.get('user_id')
+        post_id = request.query_params.get('post_id')
+
+        # Find the BookMark object matching the user and post
+        try:
+            bookmark = BookMark.objects.get(user_id=user_id, post_id=post_id)
+        except BookMark.DoesNotExist:
+            return Response(
+                {"detail": "Bookmark for this post by this user does not exist."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Delete the BookMark object
+        bookmark.delete()
+
+        return Response(
+            {"detail": "Bookmark removed successfully."},
+            status=status.HTTP_204_NO_CONTENT
+        )
