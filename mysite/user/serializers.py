@@ -36,12 +36,13 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 # Follow Serializer
 class FollowSerializer(serializers.ModelSerializer):
-    follower = ProfileSerializer(read_only=True)
-    following = ProfileSerializer(read_only=True)
+    follower_id = serializers.PrimaryKeyRelatedField(queryset=Profile.objects.all(), source='follower')
+    following_id = serializers.PrimaryKeyRelatedField(queryset=Profile.objects.all(), source='following')
 
     class Meta:
         model = Follow
-        fields = ['follower', 'following', 'created_at']
+        fields = ['follower_id', 'following_id', 'created_at']
+
 
 # Signup Serializer
 class SignupSerializer(serializers.ModelSerializer):

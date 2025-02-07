@@ -33,43 +33,46 @@ class ProfileViewSet(viewsets.ModelViewSet):
 # follow view
 class UserFollowView(APIView):
     def post(self, request, *args, **kwargs):
-        user_id = request.data.get('user_id')
-        if not user_id:
-            return Response({"detail": "User ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+        follower_id = request.data.get('follower_id')
+        following_id = request.data.get('following_id')
+        
+        if not follower_id or not following_id:
+            return Response({"detail": "Both follower_id and following_id are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        follower = getattr(request.user, 'profile', None)
-        if not follower:
-            return Response({"detail": "User profile not found."}, status=status.HTTP_400_BAD_REQUEST)
+        # Get the follower and following profiles
+        follower = get_object_or_404(Profile, id=follower_id)  
+        following = get_object_or_404(Profile, id=following_id) 
 
-        following = get_object_or_404(Profile, id=user_id)
-
+        # Check if the user is trying to follow themselves
         if follower == following:
-            return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "You cannot follow or unfollow yourself."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Check if the follow relationship already exists
         if Follow.objects.filter(follower=follower, following=following).exists():
             return Response({"detail": "Already following this user."}, status=status.HTTP_400_BAD_REQUEST)
 
-        follow = Follow.objects.create(follower=follower, following=following)
-        serializer = FollowSerializer(follow)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Create the follow relationship
+        Follow.objects.create(follower=follower, following=following)
 
+        return Response({"detail": "Following successfully."}, status=status.HTTP_201_CREATED)
 
-class UserUnfollowView(APIView):
     def delete(self, request, *args, **kwargs):
-        user_id = request.query_params.get('user_id')
-        if not user_id:
-            return Response({"detail": "User ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+        follower_id = request.query_params.get('follower_id') 
+        following_id = request.query_params.get('following_id')
+        
+        if not follower_id or not following_id:
+            return Response({"detail": "Both follower_id and following_id are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        follower = getattr(request.user, 'profile', None)
-        if not follower:
-            return Response({"detail": "User profile not found."}, status=status.HTTP_400_BAD_REQUEST)
+        # Get the follower and following profiles
+        follower = get_object_or_404(Profile, id=follower_id)
+        following = get_object_or_404(Profile, id=following_id)
 
-        following = get_object_or_404(Profile, id=user_id)
-
+        # Check if the follow relationship exists
         follow_instance = Follow.objects.filter(follower=follower, following=following).first()
         if not follow_instance:
             return Response({"detail": "You are not following this user."}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Delete the follow relationship
         follow_instance.delete()
         return Response({"detail": "Unfollowed successfully."}, status=status.HTTP_204_NO_CONTENT)
 
