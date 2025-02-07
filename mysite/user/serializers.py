@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from .models import Profile, Follow
 from django.core.exceptions import ObjectDoesNotExist
@@ -36,12 +37,25 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 # Follow Serializer
 class FollowSerializer(serializers.ModelSerializer):
-    follower_id = serializers.PrimaryKeyRelatedField(queryset=Profile.objects.all(), source='follower')
-    following_id = serializers.PrimaryKeyRelatedField(queryset=Profile.objects.all(), source='following')
+    follower_id = serializers.IntegerField(write_only=True)
+    following_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Follow
         fields = ['follower_id', 'following_id', 'created_at']
+
+    def create(self, validated_data):
+        follower = get_object_or_404(Profile, id=validated_data['follower_id'])
+        following = get_object_or_404(Profile, id=validated_data['following_id'])
+
+        if follower == following:
+            raise serializers.ValidationError("You cannot follow yourself.")
+
+        if Follow.objects.filter(follower=follower, following=following).exists():
+            raise serializers.ValidationError("Already following this user.")
+
+        return Follow.objects.create(follower=follower, following=following)
+
 
 
 # Signup Serializer

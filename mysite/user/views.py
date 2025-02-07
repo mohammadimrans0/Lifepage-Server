@@ -33,48 +33,32 @@ class ProfileViewSet(viewsets.ModelViewSet):
 # follow view
 class UserFollowView(APIView):
     def post(self, request, *args, **kwargs):
-        follower_id = request.data.get('follower_id')
-        following_id = request.data.get('following_id')
+        serializer = FollowSerializer(data=request.data)
         
-        if not follower_id or not following_id:
-            return Response({"detail": "Both follower_id and following_id are required."}, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
+            serializer.save()  # Uses `create` method in serializer
+            return Response({"detail": "Following successfully."}, status=status.HTTP_201_CREATED)
 
-        # Get the follower and following profiles
-        follower = get_object_or_404(Profile, id=follower_id)  
-        following = get_object_or_404(Profile, id=following_id) 
-
-        # Check if the user is trying to follow themselves
-        if follower == following:
-            return Response({"detail": "You cannot follow or unfollow yourself."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Check if the follow relationship already exists
-        if Follow.objects.filter(follower=follower, following=following).exists():
-            return Response({"detail": "Already following this user."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Create the follow relationship
-        Follow.objects.create(follower=follower, following=following)
-
-        return Response({"detail": "Following successfully."}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
-        follower_id = request.query_params.get('follower_id') 
+        follower_id = request.query_params.get('follower_id')
         following_id = request.query_params.get('following_id')
-        
+
         if not follower_id or not following_id:
             return Response({"detail": "Both follower_id and following_id are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Get the follower and following profiles
         follower = get_object_or_404(Profile, id=follower_id)
         following = get_object_or_404(Profile, id=following_id)
 
-        # Check if the follow relationship exists
         follow_instance = Follow.objects.filter(follower=follower, following=following).first()
         if not follow_instance:
             return Response({"detail": "You are not following this user."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Delete the follow relationship
         follow_instance.delete()
         return Response({"detail": "Unfollowed successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+
 
 
 # signup user
