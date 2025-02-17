@@ -1,8 +1,8 @@
 from pathlib import Path
-# from environ import Env
+from environ import Env
 
-# env = Env()
-# Env.read_env()
+env = Env()
+Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,17 +21,27 @@ ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://8000-idx-lifepage-1736778536248.cluster-7ubberrabzh4qqy2g4z7wgxuw2.cloudworkstations.dev',
-    'https://3000-idx-lifepage-1737724684212.cluster-a3grjzek65cxex762e4mwrzl46.cloudworkstations.dev',
     'http://127.0.0.1:8000',
     'http://localhost:3000',
     'https://lifepage-server.onrender.com',
     'https://lifepage.vercel.app'
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = [
+    'https://8000-idx-lifepage-1736778536248.cluster-7ubberrabzh4qqy2g4z7wgxuw2.cloudworkstations.dev',
+    'http://127.0.0.1:8000',
+    'http://localhost:3000',
+    'https://lifepage-server.onrender.com',
+    'https://lifepage.vercel.app'
+]
 
 INSTALLED_APPS = [
+    # vercel requirement
     "whitenoise.runserver_nostatic",
+
+    # cloud image
+
+    # system app
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,9 +49,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+
+    # drf
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
+
+    # project app
     'user',
     'post',
 ]
@@ -144,3 +158,13 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Cloudinary Storage
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": env('CLOUDINARY_CLOUD_NAME'),
+    "API_KEY": env('CLOUDINARY_API_KEY'),
+    "API_SECRET": env('CLOUDINARY_API_SECRET')
+}
+
+# Use Cloudinary for media file storage
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"

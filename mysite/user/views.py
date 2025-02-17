@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.decorators import action
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from .models import Profile, Follow
@@ -11,7 +10,7 @@ from django.contrib.auth import login, logout
 from rest_framework.authtoken.models import Token
 
 # user viewset
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     

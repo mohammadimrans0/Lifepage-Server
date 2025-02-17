@@ -2,9 +2,10 @@ from rest_framework import serializers
 from .models import Post, LikePost, CommentPost, BookMark
 
 class PostSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField()
     class Meta:
         model = Post
-        fields = '__all__'
+        fields = ['user', 'image', 'caption', 'no_of_likes', 'no_of_comments', 'created_at']
 
 class LikePostSerializer(serializers.ModelSerializer):
     class Meta:

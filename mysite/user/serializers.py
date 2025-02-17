@@ -20,6 +20,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     following = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     bookmarks = PostSerializer(many=True, read_only=True) 
 
+    image = serializers.ImageField()
     class Meta:
         model = Profile
         fields = [

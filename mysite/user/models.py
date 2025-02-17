@@ -1,14 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
 from post.models import Post
+from cloudinary.models import CloudinaryField
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     name = models.CharField(max_length=255, blank=True, null=True)
-    image = models.ImageField(
-        upload_to='upload/user/images/', 
-        default='upload/user/images/avatar.png'
-    )
+    image = CloudinaryField("image", folder="lifepage/user", default="https://res.cloudinary.com/dzuro3ezl/image/upload/v1739786072/lifepage/user/njp6vfunnf1as8g4fcqp.png")
     bio = models.TextField(blank=True)
     status = models.CharField(max_length=255, blank=True, null=True)
     contact_info = models.CharField(max_length=255, blank=True, null=True)
