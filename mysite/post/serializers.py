@@ -5,7 +5,7 @@ class PostSerializer(serializers.ModelSerializer):
     image = serializers.ImageField()
     class Meta:
         model = Post
-        fields = ['user', 'image', 'caption', 'no_of_likes', 'no_of_comments', 'created_at']
+        fields = ['id', 'user', 'image', 'caption', 'no_of_likes', 'no_of_comments', 'created_at']
 
 class LikePostSerializer(serializers.ModelSerializer):
     class Meta:
