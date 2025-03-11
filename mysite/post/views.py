@@ -1,4 +1,5 @@
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
@@ -45,6 +46,27 @@ class LikePostViewSet(viewsets.ModelViewSet):
         return Response(
             {"detail": "Like removed successfully."},
             status=status.HTTP_204_NO_CONTENT
+        )
+    
+
+class IsLikedView(APIView):
+    def get(self, request, *args, **kwargs):
+        user_id = request.query_params.get('user_id')
+        post_id = request.query_params.get('post_id')
+
+        # Check if user_id and post_id are provided
+        if not user_id or not post_id:
+            return Response(
+                {"detail": "Both `user_id` and `post_id` are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if the LikePost entry exists
+        is_liked = LikePost.objects.filter(user_id=user_id, post_id=post_id).exists()
+
+        return Response(
+            {"is_liked": is_liked},
+            status=status.HTTP_200_OK
         )
 
 class CommentPostViewSet(viewsets.ModelViewSet):
