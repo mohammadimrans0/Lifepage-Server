@@ -113,3 +113,24 @@ class BookMarkViewSet(viewsets.ModelViewSet):
             {"detail": "Bookmark removed successfully."},
             status=status.HTTP_204_NO_CONTENT
         )
+    
+
+class IsBookmarkedView(APIView):
+    def get(self, request, *args, **kwargs):
+        user_id = request.query_params.get('user_id')
+        post_id = request.query_params.get('post_id')
+
+        # Check if user_id and post_id are provided
+        if not user_id or not post_id:
+            return Response(
+                {"detail": "Both `user_id` and `post_id` are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if the LikePost entry exists
+        is_bookmarked = BookMark.objects.filter(user_id=user_id, post_id=post_id).exists()
+
+        return Response(
+            {"is_bookmarked": is_bookmarked},
+            status=status.HTTP_200_OK
+        )
